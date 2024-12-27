@@ -3,7 +3,7 @@ from typing import Generator
 from boto3 import client
 from fastapi import Depends
 from redis import Redis
-from sqlmodel import Session, create_engine
+from sqlmodel import Session, SQLModel, create_engine
 
 from core.config import settings
 
@@ -17,7 +17,7 @@ engine = create_engine(
 )
 
 
-def get_db() -> Generator[Session, None]:
+def get_db() -> Generator[Session, None, None]:
     """
     SQLAlchemy 엔진을 사용하여 데이터베이스 세션을 생성하고 반환합니다.
     이 함수는 FastAPI의 Depends 의존성 주입 시스템에서 사용되며, 데이터베이스 세션을 제공하는 데 사용됩니다.
@@ -130,3 +130,11 @@ class S3Manager:
         except Exception as e:
             print(f"파일 삭제 중 오류 발생: {str(e)}")
             return False
+
+
+def init_db():
+    """
+    데이터베이스 테이블을 초기화하는 함수입니다.
+    모든 SQLModel 모델을 기반으로 테이블을 생성합니다.
+    """
+    SQLModel.metadata.create_all(engine)

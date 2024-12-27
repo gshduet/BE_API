@@ -11,7 +11,7 @@ load_dotenv()
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
-        env_file=".env", case_sensitive=True, extra="ignore"
+        env_file=".env", case_sensitive=False, extra="ignore"
     )
 
     secret_key: str = Field(..., env="SECRET_KEY")
