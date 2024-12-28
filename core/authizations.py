@@ -58,7 +58,7 @@ async def get_current_user(
     except HTTPException:
         raise
 
-    except Exception:
+    except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="인증 처리 중 오류가 발생했습니다.",
