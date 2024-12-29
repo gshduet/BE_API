@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from fastapi import APIRouter, HTTPException, Depends, Response
+from fastapi import APIRouter, HTTPException, Depends, Response, Request, status
 from sqlmodel import Session, select
 
 from models.users import User, UserProfile
@@ -8,6 +8,7 @@ from core.databases import get_db
 from core.tokenizers import create_access_token
 from request_schemas.users import GoogleSignupRequest, UserProfileUpdateRequest
 from response_schemas.users import UserProfileResponse
+from core.authizations import get_current_user
 
 
 user_router = APIRouter(prefix="/users")
@@ -96,10 +97,18 @@ async def get_user_profile(
 
 @user_router.patch("/profile/{google_id}", response_model=UserProfileResponse)
 async def update_user_profile(
+    request: Request,
     google_id: str,
     profile_update: UserProfileUpdateRequest,
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
+    if current_user.google_id != google_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="다른 사용자의 프로필을 수정할 권한이 없습니다.",
+        )
+
     db_profile = db.exec(
         select(UserProfile).where(UserProfile.google_id == google_id)
     ).first()
