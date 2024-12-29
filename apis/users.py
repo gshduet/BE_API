@@ -3,16 +3,17 @@ from datetime import datetime
 from fastapi import APIRouter, HTTPException, Depends, Response
 from sqlmodel import Session, select
 
-from models.users import User
+from models.users import User, UserProfile
 from core.databases import get_db
 from core.tokenizers import create_access_token
-from request_schemas.users import GoogleSignupRequest
+from request_schemas.users import GoogleSignupRequest, UserProfileUpdateRequest
+from response_schemas.users import UserProfileResponse
 
 
 user_router = APIRouter(prefix="/users")
 
 
-@user_router.post("/login/google", response_model=dict)
+@user_router.post("/login", response_model=dict)
 async def google_login(
     request: GoogleSignupRequest,
     response: Response,
@@ -45,11 +46,20 @@ async def google_login(
             google_id=request.google_id,
             last_login_at=datetime.now(),
         )
+        profile = UserProfile(
+            google_id=request.google_id,
+            bio=None,
+            portfolio_url=None,
+            resume_url=None,
+            tech_stack=None,
+        )
 
         try:
             db.add(user)
+            db.add(profile)
             db.commit()
             db.refresh(user)
+            db.refresh(profile)
 
         except Exception as e:
             db.rollback()
@@ -70,3 +80,47 @@ async def google_login(
     )
 
     return {"message": "로그인 성공"}
+
+
+@user_router.get("/profile/{google_id}", response_model=UserProfileResponse)
+async def get_user_profile(
+    google_id: str,
+    db: Session = Depends(get_db),
+):
+    profile = db.exec(
+        select(UserProfile).where(UserProfile.google_id == google_id)
+    ).first()
+
+    return profile
+
+
+@user_router.patch("/profile/{google_id}", response_model=UserProfileResponse)
+async def update_user_profile(
+    google_id: str,
+    profile_update: UserProfileUpdateRequest,
+    db: Session = Depends(get_db),
+):
+    db_profile = db.exec(
+        select(UserProfile).where(UserProfile.google_id == google_id)
+    ).first()
+
+    if not db_profile:
+        raise HTTPException(status_code=404, detail="프로필을 찾을 수 없습니다.")
+
+    update_data = profile_update.model_dump(exclude_unset=True)
+
+    for field, value in update_data.items():
+        setattr(db_profile, field, value)
+
+    try:
+        db.commit()
+        db.refresh(db_profile)
+
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=500,
+            detail="프로필 업데이트 중 오류가 발생했습니다.",
+        )
+
+    return db_profile

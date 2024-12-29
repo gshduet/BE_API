@@ -198,6 +198,7 @@ async def get_guestbook_list(
         )
         .order_by(GuestBook.created_at.desc())
     ).all()
+
     return guestbooks
 
 
