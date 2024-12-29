@@ -26,6 +26,7 @@ class GuestBook(TimeStamp, SoftDelete, table=True):
 
     id: Optional[int] = Field(default=None, primary_key=True)
     content: str = Field(default="")
+    author_name: str = Field(default="")
     guest_google_id: str = Field(index=True)  # 방명록을 작성한 사용자의 google_id
     host_google_id: str = Field(index=True)  # 방명록이 작성된 대상 사용자의 google_id
     is_secret: bool = Field(default=False, description="비밀 방명록 여부")

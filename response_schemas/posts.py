@@ -15,5 +15,14 @@ class NoticeResponse(BaseModel):
     author_google_id: str
     created_at: datetime
 
-    # ConfigDict를 사용하여 설정을 정의합니다.
+    model_config = ConfigDict(from_attributes=True)
+
+
+class GuestBookResponse(BaseModel):
+    id: int
+    content: str
+    author_name: str
+    # is_secret: bool
+    created_at: datetime
+
     model_config = ConfigDict(from_attributes=True)
