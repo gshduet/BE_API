@@ -36,6 +36,8 @@ def get_redis() -> Redis:
     return Redis(
         host=settings.aws_elasticache_endpoint,
         port=settings.aws_elasticache_port,
+        db=settings.aws_elasticache_db,
+        password=settings.aws_elasticache_password,
         # ssl=True,
         # ssl_cert_reqs=None,
         socket_timeout=5.0,
