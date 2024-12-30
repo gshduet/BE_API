@@ -6,6 +6,7 @@ class GoogleSignupRequest(BaseModel):
     email: EmailStr
     name: str
     google_id: str
+    google_image_url: Optional[str] = None
 
 
 class UserProfileUpdateRequest(BaseModel):

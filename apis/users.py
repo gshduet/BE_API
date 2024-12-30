@@ -45,6 +45,7 @@ async def google_login(
             email=request.email,
             name=request.name,
             google_id=request.google_id,
+            google_image_url=request.google_image_url,
             last_login_at=datetime.now(),
         )
         profile = UserProfile(
@@ -67,11 +68,18 @@ async def google_login(
             raise HTTPException(
                 status_code=500, detail="회원가입 처리 중 오류가 발생했습니다."
             )
+
     else:
         user.last_login_at = datetime.now()
         db.commit()
 
-    access_token = create_access_token(data={"sub": user.google_id})
+    token_body = {
+        "email": user.email,
+        "name": user.name,
+        "google_id": user.google_id,
+        "google_image_url": user.google_image_url,
+    }
+    access_token = create_access_token(data=token_body)
     response.set_cookie(
         key="access_token",
         value=access_token,
