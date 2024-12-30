@@ -5,6 +5,7 @@ from starlette.middleware.cors import CORSMiddleware
 
 from apis.users import user_router
 from apis.posts import post_router
+from apis.quests import quest_router
 
 
 app = FastAPI()
@@ -39,6 +40,7 @@ def custom_openapi():
 app.openapi = custom_openapi
 app.include_router(user_router)
 app.include_router(post_router)
+app.include_router(quest_router)
 
 app.add_middleware(
     CORSMiddleware,
