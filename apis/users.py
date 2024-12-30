@@ -51,8 +51,8 @@ async def google_login(
             google_id=request.google_id,
             bio=None,
             portfolio_url=None,
-            resume_url=None,
-            tech_stack=None,
+            resume_url=[],
+            tech_stack=[],
         )
 
         try:

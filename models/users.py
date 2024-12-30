@@ -15,6 +15,9 @@ class User(TimeStamp, table=True):
     email: str = Field(unique=True)
     name: str = Field(default="")
     google_id: str = Field(unique=True, index=True)
+    google_image_url: Optional[str] = Field(
+        default=None, sa_column=Column(String, nullable=True)
+    )
     generation: int = Field(default=0, nullable=True)
     last_login_at: Optional[datetime] = None
     role_level: int = Field(default=0)
@@ -32,9 +35,5 @@ class UserProfile(TimeStamp, table=True):
     portfolio_url: Optional[str] = Field(
         default=None, sa_column=Column(String, nullable=True)
     )
-    resume_url: Optional[str] = Field(
-        default=None, sa_column=Column(String, nullable=True)
-    )
-    tech_stack: Optional[List[str]] = Field(
-        default=None, sa_column=Column(ARRAY(String), nullable=True)
-    )
+    resume_url: List[str] = Field(default_factory=list, sa_column=Column(ARRAY(String)))
+    tech_stack: List[str] = Field(default_factory=list, sa_column=Column(ARRAY(String)))
