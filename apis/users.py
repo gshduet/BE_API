@@ -1,13 +1,14 @@
 from datetime import datetime
+from typing import Annotated
 
-from fastapi import APIRouter, HTTPException, Depends, Response, Request, status
+from fastapi import APIRouter, HTTPException, Depends, Response, Request, status, Cookie
 from sqlmodel import Session, select
 
 from models.users import User, UserProfile
 from core.databases import get_db
-from core.tokenizers import create_access_token
+from core.tokenizers import create_access_token, decode_access_token
 from request_schemas.users import GoogleSignupRequest, UserProfileUpdateRequest
-from response_schemas.users import UserProfileResponse
+from response_schemas.users import UserProfileResponse, UserListResponse
 from core.authizations import get_current_user
 
 
@@ -16,79 +17,69 @@ user_router = APIRouter(prefix="/users")
 
 @user_router.post("/login", response_model=dict)
 async def google_login(
+    request_obj: Request,
     request: GoogleSignupRequest,
     response: Response,
     db: Session = Depends(get_db),
 ):
-    """
-    Google OAuth를 통한 로그인/회원가입을 처리하는 엔드포인트입니다.
+    access_token = request_obj.cookies.get("access_token")
+    if access_token:
+        return {"message": "로그인 성공"}
 
-    클라이언트로부터 전달받은 Google 계정 정보를 바탕으로 신규 회원가입 또는 로그인을 수행합니다.
-    기존 회원인 경우 마지막 로그인 시간을 업데이트하고, 신규 회원인 경우 회원 정보를 저장합니다.
-    인증에 성공하면 JWT 액세스 토큰을 생성하여 쿠키에 저장합니다.
-
-    Args:
-        request (GoogleSignupRequest): Google 계정 정보가 담긴 요청 객체
-        response (Response): FastAPI Response 객체
-        db (Session): 데이터베이스 세션
-
-    Returns:
-        dict: 로그인 성공 메시지
-
-    Raises:
-        HTTPException: 회원가입 처리 중 오류가 발생한 경우
-    """
     user = db.exec(select(User).where(User.google_id == request.google_id)).first()
-
     if not user:
         user = User(
             email=request.email,
             name=request.name,
             google_id=request.google_id,
             google_image_url=request.google_image_url,
-            last_login_at=datetime.now(),
+            generation=7,
+            role_level=0,
         )
         profile = UserProfile(
             google_id=request.google_id,
             bio=None,
-            portfolio_url=None,
-            resume_url=[],
+            resume_url=None,
+            portfolio_url=[],
             tech_stack=[],
         )
-
-        try:
-            db.add(user)
-            db.add(profile)
-            db.commit()
-            db.refresh(user)
-            db.refresh(profile)
-
-        except Exception as e:
-            db.rollback()
-            raise HTTPException(
-                status_code=500, detail="회원가입 처리 중 오류가 발생했습니다."
-            )
-
-    else:
-        user.last_login_at = datetime.now()
+        db.add(user)
+        db.add(profile)
         db.commit()
+        db.refresh(user)
+        db.refresh(profile)
+
+    user.last_login_at = datetime.now()
+    db.commit()
+    db.refresh(user)
 
     token_body = {
         "email": user.email,
         "name": user.name,
         "google_id": user.google_id,
         "google_image_url": user.google_image_url,
+        "generation": user.generation,
     }
+
     access_token = create_access_token(data=token_body)
     response.set_cookie(
         key="access_token",
         value=access_token,
         httponly=True,
-        # secure=True,
+        secure=True,
         samesite="lax",
+        max_age=30 * 24 * 60 * 60,  # 30일 (30일 * 24시간 * 60분 * 60초)
     )
 
     return {"message": "로그인 성공"}
+
+
+@user_router.get("/all", response_model=list[UserListResponse])
+async def get_all_users(
+    db: Session = Depends(get_db),
+):
+    users = db.exec(select(User)).all()
+    return users
 
 
 @user_router.get("/profile/{google_id}", response_model=UserProfileResponse)

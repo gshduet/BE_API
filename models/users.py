@@ -32,8 +32,10 @@ class UserProfile(TimeStamp, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     google_id: str = Field(index=True)
     bio: Optional[str] = Field(default=None, sa_column=Column(String, nullable=True))
-    portfolio_url: Optional[str] = Field(
+    resume_url: Optional[str] = Field(
         default=None, sa_column=Column(String, nullable=True)
     )
-    resume_url: List[str] = Field(default_factory=list, sa_column=Column(ARRAY(String)))
+    portfolio_url: List[str] = Field(
+        default_factory=list, sa_column=Column(ARRAY(String))
+    )
     tech_stack: List[str] = Field(default_factory=list, sa_column=Column(ARRAY(String)))

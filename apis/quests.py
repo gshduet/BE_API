@@ -55,6 +55,7 @@ async def create_quest_result(
         return {"message": "문제 해결 정보 생성 성공"}
 
     except Exception as e:
+        print(e)
         db.rollback()
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -72,4 +73,5 @@ async def get_quest_results(
         .where(QuestResult.quest_number == quest_number)
         .order_by(QuestResult.time_taken.asc())
     ).all()
+
     return results

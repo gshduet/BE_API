@@ -7,21 +7,14 @@ from fastapi import HTTPException, status
 from core.config import settings
 
 
-def create_access_token(
-    data: dict[str, Any], expires_delta: Optional[timedelta] = None
-) -> str:
+def create_access_token(data: dict[str, Any]) -> str:
     """
     JWT 액세스 토큰을 생성합니다.
     PyJWT를 사용하여 토큰을 생성하며, 만료 시간을 포함한 페이로드를 인코딩합니다.
     """
     to_encode = data.copy()
+    to_encode.update({"exp": datetime.now() + timedelta(days=30)})
 
-    if expires_delta:
-        expire = datetime.now() + expires_delta
-    else:
-        expire = datetime.now() + timedelta(hours=12)
-
-    to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(
         to_encode, settings.secret_key, algorithm=settings.algorithm
     )
@@ -39,10 +32,6 @@ def decode_access_token(token: str) -> dict[str, Any]:
             token, settings.secret_key, algorithms=[settings.algorithm]
         )
         return payload
-    except jwt.ExpiredSignatureError:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail="토큰이 만료되었습니다."
-        )
     except jwt.InvalidTokenError:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="유효하지 않은 토큰입니다."
