@@ -7,7 +7,11 @@ WORKDIR /app
 RUN apk update && apk add --no-cache \
     gcc \
     postgresql-client \
+    tzdata \
     && rm -rf /var/lib/apt/lists/*
+
+# 타임존 설정
+ENV TZ=Asia/Seoul
 
 # 환경 변수 설정
 ENV PYTHONUNBUFFERED=1 \

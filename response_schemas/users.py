@@ -7,3 +7,8 @@ class UserProfileResponse(BaseModel):
     portfolio_url: Optional[str] = None
     resume_url: Optional[List[str]] = None
     tech_stack: Optional[List[str]] = None
+
+
+class UserListResponse(BaseModel):
+    name: str
+    google_id: str

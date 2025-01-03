@@ -37,7 +37,7 @@ async def get_current_user(
 
     try:
         payload = decode_access_token(access_token)
-        google_id = payload.get("sub")
+        google_id = payload.get("google_id")
 
         if not google_id:
             raise HTTPException(
