@@ -20,7 +20,7 @@ def custom_openapi():
 
     openapi_schema = get_openapi(
         title="FastAPI Blog",
-        version="1.0.0",
+        version="1.1.0",
         description="쿠키 기반 인증이 구현된 블로그 API",
         routes=app.routes,
     )
