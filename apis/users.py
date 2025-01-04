@@ -17,7 +17,6 @@ user_router = APIRouter(prefix="/users")
 
 @user_router.post("/login", response_model=dict)
 async def google_login(
-    request_obj: Request,
     request: GoogleSignupRequest,
     response: Response,
     db: Session = Depends(get_db),
@@ -27,17 +26,10 @@ async def google_login(
     이미 로그인된 사용자의 경우 쿠키의 access_token을 확인하여 즉시 로그인 성공을 반환합니다.
     신규 사용자의 경우 회원가입 절차를 진행하고, 기존 사용자의 경우 로그인 시간을 업데이트합니다.
     """
-    # 이미 로그인된 사용자 체크
     try:
-        access_token = request_obj.cookies.get("access_token")
-        if access_token:
-            return {"message": "로그인 성공"}
-
-        # 기존 사용자 조회
-        user = db.exec(select(User).where(User.google_id == request.google_id)).first()
+        user = db.exec(select(User).where(User.email == request.email)).first()
 
         if not user:
-            # 신규 사용자 등록
             user = User(
                 email=request.email,
                 name=request.name,
@@ -56,12 +48,10 @@ async def google_login(
             db.add(user)
             db.add(profile)
 
-        # 마지막 로그인 시간 업데이트
         user.last_login_at = datetime.now()
         db.commit()
         db.refresh(user)
 
-        # 토큰 생성 및 쿠키 설정
         token_body = {
             "email": user.email,
             "name": user.name,
@@ -75,14 +65,17 @@ async def google_login(
             key="access_token",
             value=access_token,
             httponly=True,
-            # secure=True,
+            secure=True,
             samesite="lax",
+            domain=".jgtower.com",
+            path="/",
             max_age=30 * 24 * 60 * 60,
         )
 
         return {"message": "로그인 성공"}
 
     except Exception as e:
+        print(e)
         db.rollback()
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
