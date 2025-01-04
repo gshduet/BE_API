@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from fastapi import Depends, HTTPException, status, Cookie
+from fastapi import Depends, HTTPException, status, Request
 from sqlmodel import Session, select
 
 from core.databases import get_db
@@ -9,7 +9,7 @@ from models.users import User
 
 
 async def get_current_user(
-    access_token: Annotated[str | None, Cookie()] = None,
+    request_obj: Request,
     db: Session = Depends(get_db),
 ) -> User:
     """
@@ -30,27 +30,33 @@ async def get_current_user(
     Raises:
         HTTPException: 인증에 실패하거나 사용자를 찾을 수 없는 경우
     """
-    if not access_token:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail="인증되지 않은 요청입니다."
-        )
-
     try:
+        access_token = request_obj.cookies.get("access_token")
+
+        if not access_token:
+            print(1)
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="인증되지 않은 요청입니다.",
+            )
+
         payload = decode_access_token(access_token)
         google_id = payload.get("google_id")
 
         if not google_id:
+            print(2)
             raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
+                status_code=status.HTTP_403_FORBIDDEN,
                 detail="유효하지 않은 인증 정보입니다.",
             )
 
         user = db.exec(select(User).where(User.google_id == google_id)).first()
 
         if not user:
+            print(3)
             raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="사용자를 찾을 수 없습니다.",
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="유효하지 않은 인증 정보입니다.",
             )
 
         return user
@@ -59,6 +65,7 @@ async def get_current_user(
         raise
 
     except Exception as e:
+        print(e)
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="인증 처리 중 오류가 발생했습니다.",
