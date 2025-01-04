@@ -7,6 +7,5 @@ class NoticeCreate(BaseModel):
 
 
 class GuestBookCreate(BaseModel):
-    host_google_id: str
     content: str
     is_secret: bool = False

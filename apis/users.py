@@ -61,13 +61,21 @@ async def google_login(
         }
 
         access_token = create_access_token(data=token_body)
+
+        # API 서버의 도메인으로 쿠키 설정
+        domain = (
+            "jgtower.com"
+            if "jgtower.com" in request.headers.get("origin", "")
+            else None
+        )
+
         response.set_cookie(
             key="access_token",
             value=access_token,
             httponly=True,
             secure=True,
             samesite="lax",
-            domain=".jgtower.com",
+            domain=domain,
             path="/",
             max_age=30 * 24 * 60 * 60,
         )
@@ -111,11 +119,10 @@ async def get_user_profile(
 
 @user_router.patch("/profile/{google_id}", response_model=UserProfileResponse)
 async def update_user_profile(
-    request: Request,
     google_id: str,
     profile_update: UserProfileUpdateRequest,
+    current_user: Annotated[User, Depends(get_current_user)],
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
 ):
     if current_user.google_id != google_id:
         raise HTTPException(
