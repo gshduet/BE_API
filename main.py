@@ -6,10 +6,16 @@ from starlette.middleware.cors import CORSMiddleware
 from apis.users import user_router
 from apis.posts import post_router
 from apis.quests import quest_router
+from apis.meeting_rooms import meeting_room_router
 
+from core.redis import init_redis
 
 app = FastAPI()
 
+# Redis 초기화
+@app.on_event("startup")
+async def startup_event():
+    await init_redis()
 
 def custom_openapi():
     if app.openapi_schema:
@@ -38,6 +44,7 @@ app.openapi = custom_openapi
 app.include_router(user_router)
 app.include_router(post_router)
 app.include_router(quest_router)
+app.include_router(meeting_room_router)
 
 app.add_middleware(
     CORSMiddleware,
