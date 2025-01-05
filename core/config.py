@@ -34,8 +34,8 @@ class Settings(BaseSettings):
 
     aws_elasticache_endpoint: str = Field(..., env="AWS_ELASTICACHE_ENDPOINT")
     aws_elasticache_port: str = Field(..., env="AWS_ELASTICACHE_PORT")
-    aws_elasticache_db: str = Field(..., env="AWS_ELASTICACHE_DB")
-    aws_elasticache_password: str = Field(..., env="AWS_ELASTICACHE_PASSWORD")
+    # aws_elasticache_db: str = Field(..., env="AWS_ELASTICACHE_DB")
+    # aws_elasticache_password: str = Field(..., env="AWS_ELASTICACHE_PASSWORD")
 
     aws_s3_bucket_name: str = Field(..., env="AWS_S3_BUCKET_NAME")
 
