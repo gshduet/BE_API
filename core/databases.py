@@ -26,25 +26,25 @@ def get_db() -> Generator[Session, None, None]:
         yield session
 
 
-def get_redis() -> Redis:
-    """
-    AWS ElastiCache for Redis에 연결하는 클라이언트를 생성합니다.
-    SSL/TLS 연결, 연결 타임아웃, 재시도 설정 등 AWS ElastiCache에 필요한 기본적인 설정들을 포함합니다.
-    클러스터 모드가 활성화된 경우에는 추가 설정이 필요할 수 있습니다.
-    이 함수는 FastAPI의 Depends 의존성 주입 시스템에서 사용되며, redis 클라이언트를 제공하는 데 사용됩니다.
-    """
-    return Redis(
-        host=settings.aws_elasticache_endpoint,
-        port=settings.aws_elasticache_port,
-        db=settings.aws_elasticache_db,
-        password=settings.aws_elasticache_password,
-        # ssl=True,
-        # ssl_cert_reqs=None,
-        socket_timeout=5.0,
-        socket_connect_timeout=2.0,
-        retry_on_timeout=True,
-        max_connections=10,
-    )
+# def get_redis() -> Redis:
+#     """
+#     AWS ElastiCache for Redis에 연결하는 클라이언트를 생성합니다.
+#     SSL/TLS 연결, 연결 타임아웃, 재시도 설정 등 AWS ElastiCache에 필요한 기본적인 설정들을 포함합니다.
+#     클러스터 모드가 활성화된 경우에는 추가 설정이 필요할 수 있습니다.
+#     이 함수는 FastAPI의 Depends 의존성 주입 시스템에서 사용되며, redis 클라이언트를 제공하는 데 사용됩니다.
+#     """
+#     return Redis(
+#         host=settings.aws_elasticache_endpoint,
+#         port=settings.aws_elasticache_port,
+#         db=settings.aws_elasticache_db,
+#         password=settings.aws_elasticache_password,
+#         # ssl=True,
+#         # ssl_cert_reqs=None,
+#         socket_timeout=5.0,
+#         socket_connect_timeout=2.0,
+#         retry_on_timeout=True,
+#         max_connections=10,
+#     )
 
 
 def _s3_client() -> client:

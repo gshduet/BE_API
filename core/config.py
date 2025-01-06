@@ -32,6 +32,12 @@ class Settings(BaseSettings):
     aws_rds_db_host: str = Field(..., env="AWS_RDS_DB_HOST")
     aws_rds_db_port: str = Field(..., env="AWS_RDS_DB_PORT")
 
+
+    aws_elasticache_endpoint: str = Field(..., env="AWS_ELASTICACHE_ENDPOINT")
+    aws_elasticache_port: str = Field(..., env="AWS_ELASTICACHE_PORT")
+    # aws_elasticache_db: str = Field(..., env="AWS_ELASTICACHE_DB")
+    # aws_elasticache_password: str = Field(..., env="AWS_ELASTICACHE_PASSWORD")
+
     def get_db_url(self) -> str:
         return f"postgresql://{self.aws_rds_db_username}:{self.aws_rds_db_password}@{self.aws_rds_db_host}:{self.aws_rds_db_port}/{self.aws_rds_db_name}"
 
