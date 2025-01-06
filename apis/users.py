@@ -61,21 +61,13 @@ async def google_login(
         }
 
         access_token = create_access_token(data=token_body)
-
-        # API 서버의 도메인으로 쿠키 설정
-        domain = (
-            "jgtower.com"
-            if "jgtower.com" in request.headers.get("origin", "")
-            else None
-        )
-
         response.set_cookie(
             key="access_token",
             value=access_token,
             httponly=True,
             secure=True,
             samesite="lax",
-            domain=domain,
+            domain="jgtower.com",
             path="/",
             max_age=30 * 24 * 60 * 60,
         )
