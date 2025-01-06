@@ -34,7 +34,6 @@ async def get_current_user(
         access_token = request_obj.cookies.get("access_token")
 
         if not access_token:
-            print(1)
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="인증되지 않은 요청입니다.",
@@ -44,7 +43,6 @@ async def get_current_user(
         google_id = payload.get("google_id")
 
         if not google_id:
-            print(2)
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="유효하지 않은 인증 정보입니다.",
@@ -53,7 +51,6 @@ async def get_current_user(
         user = db.exec(select(User).where(User.google_id == google_id)).first()
 
         if not user:
-            print(3)
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="유효하지 않은 인증 정보입니다.",

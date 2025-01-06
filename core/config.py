@@ -32,31 +32,18 @@ class Settings(BaseSettings):
     aws_rds_db_host: str = Field(..., env="AWS_RDS_DB_HOST")
     aws_rds_db_port: str = Field(..., env="AWS_RDS_DB_PORT")
 
+
     aws_elasticache_endpoint: str = Field(..., env="AWS_ELASTICACHE_ENDPOINT")
     aws_elasticache_port: str = Field(..., env="AWS_ELASTICACHE_PORT")
     # aws_elasticache_db: str = Field(..., env="AWS_ELASTICACHE_DB")
     # aws_elasticache_password: str = Field(..., env="AWS_ELASTICACHE_PASSWORD")
 
-    aws_s3_bucket_name: str = Field(..., env="AWS_S3_BUCKET_NAME")
-
     def get_db_url(self) -> str:
         return f"postgresql://{self.aws_rds_db_username}:{self.aws_rds_db_password}@{self.aws_rds_db_host}:{self.aws_rds_db_port}/{self.aws_rds_db_name}"
-
-    def get_aws_s3_client(self) -> client:
-        return client(
-            "s3",
-            aws_access_key_id=self.aws_access_key_id,
-            aws_secret_access_key=self.aws_secret_access_key,
-            region_name=self.aws_region,
-        )
 
     @property
     def db_url(self) -> str:
         return self.get_db_url()
-
-    @property
-    def aws_s3_client(self) -> client:
-        return self.get_aws_s3_client()
 
 
 @lru_cache
