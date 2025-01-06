@@ -1,8 +1,6 @@
 from typing import Optional
-from datetime import datetime
 
 from sqlmodel import Field
-from pydantic import BaseModel
 
 from models.commons import TimeStamp, SoftDelete
 
@@ -16,7 +14,7 @@ class Notice(TimeStamp, SoftDelete, table=True):
     title: str = Field(default="")
     content: str = Field(default="")
     author_name: str = Field(default="")
-    author_google_id: str = Field(index=True)  # User 모델의 google_id와 매칭되는 필드
+    author_google_id: str = Field(index=True)
 
 
 class GuestBook(TimeStamp, SoftDelete, table=True):
@@ -27,6 +25,6 @@ class GuestBook(TimeStamp, SoftDelete, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     content: str = Field(default="")
     author_name: str = Field(default="")
-    guest_google_id: str = Field(index=True)  # 방명록을 작성한 사용자의 google_id
-    host_google_id: str = Field(index=True)  # 방명록이 작성된 대상 사용자의 google_id
+    guest_google_id: str = Field(index=True)
+    host_google_id: str = Field(index=True)
     is_secret: bool = Field(default=False, description="비밀 방명록 여부")

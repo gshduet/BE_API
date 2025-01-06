@@ -1,5 +1,3 @@
-from typing import Annotated
-
 from fastapi import Depends, HTTPException, status, Request
 from sqlmodel import Session, select
 

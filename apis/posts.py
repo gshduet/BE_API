@@ -37,7 +37,6 @@ async def create_notice(
         HTTPException: 게시글 작성 중 데이터베이스 오류가 발생한 경우
     """
     try:
-        # 새 게시글 생성
         new_post = Notice(
             title=request.title,
             content=request.content,

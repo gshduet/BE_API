@@ -6,16 +6,10 @@ from starlette.middleware.cors import CORSMiddleware
 from apis.users import user_router
 from apis.posts import post_router
 from apis.quests import quest_router
-from apis.meeting_rooms import meeting_room_router
-
-from core.redis import init_redis
+from apis.meetings import meetings_router
 
 app = FastAPI()
 
-# Redis 초기화
-@app.on_event("startup")
-async def startup_event():
-    await init_redis()
 
 def custom_openapi():
     if app.openapi_schema:
@@ -28,12 +22,10 @@ def custom_openapi():
         routes=app.routes,
     )
 
-    # 기존 security schemes를 쿠키 인증으로 변경
     openapi_schema["components"]["securitySchemes"] = {
         "cookieAuth": {"type": "apiKey", "in": "cookie", "name": "access_token"}
     }
 
-    # 모든 엔드포인트에 보안 정의 적용
     openapi_schema["security"] = [{"cookieAuth": []}]
 
     app.openapi_schema = openapi_schema
@@ -44,7 +36,7 @@ app.openapi = custom_openapi
 app.include_router(user_router)
 app.include_router(post_router)
 app.include_router(quest_router)
-app.include_router(meeting_room_router)
+app.include_router(meetings_router)
 
 app.add_middleware(
     CORSMiddleware,
