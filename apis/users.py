@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Annotated
 
-from fastapi import APIRouter, HTTPException, Depends, Response, Request, status, Cookie
+from fastapi import APIRouter, HTTPException, Depends, Response, status, Cookie
 from sqlmodel import Session, select
 
 from models.users import User, UserProfile
