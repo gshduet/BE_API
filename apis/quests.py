@@ -1,14 +1,14 @@
 from typing import Annotated, List
 
-from fastapi import APIRouter, Depends, HTTPException, status
-from sqlmodel import Session, select
+from fastapi import APIRouter, Depends, status
+from sqlmodel import Session
 
 from core.databases import get_db
 from core.authizations import get_current_user
 from models.users import User
-from models.quests import Quest, QuestResult
 from request_schemas.quests import QuestResultCreateRequest
 from response_schemas.quests import QuestResponse, QuestResultResponse
+from crud import quests as quests_crud
 
 quest_router = APIRouter(prefix="/quests")
 
@@ -18,15 +18,7 @@ async def get_quest(
     quest_number: int,
     db: Session = Depends(get_db),
 ):
-    quest = db.exec(select(Quest).where(Quest.quest_number == quest_number)).first()
-
-    if not quest:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="문제를 찾을 수 없습니다.",
-        )
-
-    return quest
+    return quests_crud.get_quest(db=db, quest_number=quest_number)
 
 
 @quest_router.post(
@@ -40,27 +32,14 @@ async def create_quest_result(
     current_user: Annotated[User, Depends(get_current_user)],
     db: Session = Depends(get_db),
 ):
-    new_result = QuestResult(
+    quests_crud.create_quest_result(
+        db=db,
         quest_number=quest_number,
+        request=request,
         user_email=current_user.email,
         user_name=current_user.name,
-        time_taken=request.time_taken,
     )
-
-    try:
-        db.add(new_result)
-        db.commit()
-        db.refresh(new_result)
-
-        return {"message": "문제 해결 정보 생성 성공"}
-
-    except Exception as e:
-        print(e)
-        db.rollback()
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="문제 해결 정보 생성 중 오류가 발생했습니다.",
-        )
+    return {"message": "문제 해결 정보 생성 성공"}
 
 
 @quest_router.get("/results/{quest_number}", response_model=List[QuestResultResponse])
@@ -68,10 +47,4 @@ async def get_quest_results(
     quest_number: int,
     db: Session = Depends(get_db),
 ):
-    results = db.exec(
-        select(QuestResult)
-        .where(QuestResult.quest_number == quest_number)
-        .order_by(QuestResult.time_taken.asc())
-    ).all()
-
-    return results
+    return quests_crud.get_quest_results(db=db, quest_number=quest_number)
