@@ -201,31 +201,36 @@ async def get_guestbook_list(
     return guestbooks
 
 
-@post_router.get(
-    "/guestbooks/{host_google_id}/{guestbook_id}", response_model=GuestBookResponse
+@post_router.delete(
+    "/guestbooks/{host_google_id}/{guestbook_id}",
+    response_model=dict,
+    status_code=status.HTTP_200_OK,
 )
-async def get_guestbook(
+async def delete_guestbook(
     host_google_id: str,
     guestbook_id: int,
+    current_user: Annotated[User, Depends(get_current_user)],
     db: Session = Depends(get_db),
 ):
     """
-    특정 방명록의 상세 정보를 조회하는 엔드포인트입니다.
+    특정 방명록을 삭제 처리하는 엔드포인트입니다.
 
-    URL 경로에서 전달받은 방명록 ID를 기반으로 해당 방명록의 정보를 조회합니다.
-    삭제되지 않은 방명록만 조회 가능하며, 존재하지 않는 방명록 ID가 전달된 경우 404 에러를 반환합니다.
-    조회된 방명록은 GuestBookResponse 모델 형식으로 변환되어 반환됩니다.
+    URL 경로에서 전달받은 방명록 ID를 기반으로 해당 방명록을 삭제 처리합니다.
+    실제로 데이터베이스에서 삭제하지 않고 is_deleted 필드를 True로 설정하여 소프트 삭제를 수행합니다.
+    방명록 작성자나 방명록이 작성된 대상 사용자만이 삭제할 수 있습니다.
+    존재하지 않는 방명록 ID가 전달된 경우 404 에러를 반환합니다.
 
     Args:
-        host_google_id (str): 방명록을 조회할 대상 사용자의 google_id
-        guestbook_id (int): 조회할 방명록의 ID
+        host_google_id (str): 방명록이 작성된 대상 사용자의 google_id
+        guestbook_id (int): 삭제할 방명록의 ID
+        current_user (User): 현재 로그인된 사용자 정보
         db (Session): 데이터베이스 세션
 
     Returns:
-        GuestBookResponse: 조회된 방명록 정보
+        dict: 방명록 삭제 성공 메시지
 
     Raises:
-        HTTPException: 방명록을 찾을 수 없는 경우 404 에러 발생
+        HTTPException: 방명록을 찾을 수 없거나, 삭제 권한이 없는 경우 에러 발생
     """
     guestbook = db.exec(
         select(GuestBook).where(
@@ -241,4 +246,25 @@ async def get_guestbook(
             detail="방명록을 찾을 수 없습니다.",
         )
 
-    return guestbook
+    # 방명록 작성자나 대상 사용자만 삭제 가능
+    if (
+        current_user.google_id != guestbook.guest_google_id
+        and current_user.google_id != host_google_id
+    ):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="방명록을 삭제할 권한이 없습니다.",
+        )
+
+    try:
+        guestbook.soft_delete()
+        db.commit()
+
+        return {"message": "방명록이 삭제되었습니다."}
+
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="방명록 삭제 중 오류가 발생했습니다.",
+        )
