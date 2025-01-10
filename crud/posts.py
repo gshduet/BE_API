@@ -19,7 +19,7 @@ def create_notice(
         db.add(new_post)
         db.commit()
 
-    except Exception as e:
+    except Exception:
         db.rollback()
 
         raise HTTPException(
@@ -69,7 +69,7 @@ def create_guestbook(
         db.add(new_guestbook)
         db.commit()
 
-    except Exception as e:
+    except Exception:
         db.rollback()
 
         raise HTTPException(
@@ -119,7 +119,7 @@ def delete_guestbook(
         guestbook.soft_delete()
         db.commit()
 
-    except Exception as e:
+    except Exception:
         db.rollback()
 
         raise HTTPException(

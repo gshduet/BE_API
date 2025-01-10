@@ -35,7 +35,7 @@ def create_new_user(db: Session, user_data: GoogleSignupRequest) -> User:
 
         return user
 
-    except Exception as e:
+    except Exception:
         db.rollback()
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -50,7 +50,7 @@ def update_last_login(db: Session, user: User) -> User:
         db.refresh(user)
         return user
 
-    except Exception as e:
+    except Exception:
         db.rollback()
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -99,10 +99,10 @@ def update_user_profile(
 
         return result
 
-    except Exception as e:
+    except Exception:
         db.rollback()
 
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"프로필 업데이트 중 오류가 발생했습니다: {str(e)}",
+            detail=f"프로필 업데이트 중 오류가 발생했습니다.",
         )

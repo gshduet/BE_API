@@ -35,7 +35,7 @@ def create_quest_result(
         db.add(new_result)
         db.commit()
 
-    except Exception as e:
+    except Exception:
         db.rollback()
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,

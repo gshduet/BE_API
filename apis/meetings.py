@@ -27,8 +27,7 @@ async def create_meeting_room(
         )
         return {"message": "미팅룸 생성 성공"}
 
-    except Exception as e:
-        print(e)
+    except Exception:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Redis에서 미팅룸 생성 중 오류가 발생했습니다.",
@@ -40,8 +39,7 @@ async def get_meeting_rooms(redis: Redis = Depends(get_redis)):
     try:
         return await get_all_meeting_rooms(redis)
 
-    except Exception as e:
-        print(e)
+    except Exception:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Redis에서 미팅룸 조회 중 오류가 발생했습니다.",
@@ -54,8 +52,7 @@ async def join_meeting_room(request: RoomJoin, redis: Redis = Depends(get_redis)
         await add_to_meeting_room(redis, request.room_id, None, request.client_id)
         return {"message": "미팅룸 입장 성공"}
 
-    except Exception as e:
-        print(e)
+    except Exception:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Redis에서 미팅룸 입장 처리 중 오류가 발생했습니다.",
@@ -78,9 +75,7 @@ async def leave_meeting_room(request: RoomLeave, redis: Redis = Depends(get_redi
 
         return {"message": "미팅룸 퇴장 성공"}
 
-    except Exception as e:
-        print(e)
-
+    except Exception:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Redis에서 미팅룸 퇴장 처리 중 오류가 발생했습니다.",

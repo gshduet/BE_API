@@ -58,8 +58,7 @@ async def google_login(
 
         return {"message": "로그인 성공"}
 
-    except Exception as e:
-        print(e)
+    except Exception:
         db.rollback()
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -106,11 +105,8 @@ async def update_user_profile_endpoint(
         updated_profile = update_user_profile(db, google_id, profile_update)
         return updated_profile
 
-    except HTTPException as e:
-        raise e
-
-    except Exception as e:
+    except Exception:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"프로필 업데이트 중 오류가 발생했습니다: {str(e)}",
+            detail=f"프로필 업데이트 중 오류가 발생했습니다.",
         )
