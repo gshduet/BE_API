@@ -1,13 +1,12 @@
-from datetime import datetime
 from typing import Annotated
 
 from fastapi import APIRouter, HTTPException, Depends, Response, status
-from sqlmodel import Session, update
+from sqlmodel import Session
 
 from core.databases import get_db
 from core.tokenizers import create_access_token
 from core.authizations import get_current_user
-from models.users import User, UserProfile
+from models.users import User
 from crud.users import (
     get_user_by_email,
     create_new_user,
@@ -72,16 +71,14 @@ async def google_login(
 async def get_users_list(
     db: Session = Depends(get_db),
 ):
-    users = get_all_users(db)
-    return users
+    return get_all_users(db)
 
 
 @user_router.get("", response_model=list[UserListResponse])
 async def get_users_list_v2(
     db: Session = Depends(get_db),
 ):
-    users = get_all_users(db)
-    return users
+    return get_all_users(db)
 
 
 @user_router.get("/profile/{google_id}", response_model=UserProfileResponse)
@@ -89,8 +86,7 @@ async def get_user_profile(
     google_id: str,
     db: Session = Depends(get_db),
 ):
-    profile = get_profile(db, google_id)
-    return profile
+    return get_profile(db, google_id)
 
 
 @user_router.patch("/profile/{google_id}", response_model=UserProfileResponse)
