@@ -12,3 +12,4 @@ class UserProfileResponse(BaseModel):
 class UserListResponse(BaseModel):
     name: str
     google_id: str
+    generation: int
