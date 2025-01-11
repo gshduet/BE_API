@@ -6,10 +6,6 @@ from models.commons import TimeStamp, SoftDelete
 
 
 class Notice(TimeStamp, SoftDelete, table=True):
-    """
-    공지사항 모델입니다.
-    """
-
     id: Optional[int] = Field(default=None, primary_key=True)
     title: str = Field(default="")
     content: str = Field(default="")
@@ -18,10 +14,6 @@ class Notice(TimeStamp, SoftDelete, table=True):
 
 
 class GuestBook(TimeStamp, SoftDelete, table=True):
-    """
-    방명록 모델입니다.
-    """
-
     id: Optional[int] = Field(default=None, primary_key=True)
     content: str = Field(default="")
     author_name: str = Field(default="")
